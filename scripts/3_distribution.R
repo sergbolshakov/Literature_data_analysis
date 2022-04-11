@@ -99,9 +99,45 @@ cowplot::plot_grid(plot_distribution_species,
                    label_fontfamily = "Times New Roman",
                    ncol = 2, nrow = 1)
 
-ggplot2::ggsave("output/distribution.jpg",
+ggplot2::ggsave("output/distributions.jpg",
                 width = 219,
                 height = 82,
+                units = "mm",
+                dpi = 1200,
+                bg = "white")
+
+# Morphogroups tile grid map ---------------------------------------------------
+
+data %>% 
+  dplyr::group_by(stateProvince, group) %>% 
+  dplyr::summarize(species = dplyr::n_distinct(acceptedNameUsage)) %>% 
+  ggplot2::ggplot(ggplot2::aes(x = species,
+                               y = group,
+                               fill = group)) +
+  ggplot2::geom_col() +
+  ggplot2::labs(x = "", y = "") +
+  geofacet::facet_geo(~ stateProvince,
+                      grid = european_russia,
+                      label = "code") +
+  ggplot2::scale_y_discrete(limits = rev(c("corticioid",
+                                           "polyporoid",
+                                           "clavarioid"))) +
+  ggplot2::scale_x_continuous(breaks = scales::breaks_extended(n = 3)) +
+  ggplot2::scale_fill_manual(values = c("corticioid" = "#1b9e77",
+                                        "polyporoid" = "#d95f02",
+                                        "clavarioid" = "#7570b3")) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(legend.position = "right",
+                 legend.title = ggplot2::element_blank(),
+                 legend.text = ggplot2::element_text(size = 8)) +
+  ggplot2::theme(text = ggplot2::element_text(family = "Times New Roman",
+                                              face = "bold"),
+                 axis.text.y = ggplot2::element_blank(),
+                 axis.text.x = ggplot2::element_text(size = 6))
+
+ggplot2::ggsave("output/groups_regions.jpg",
+                width = 219,
+                height = 170,
                 units = "mm",
                 dpi = 1200,
                 bg = "white")
@@ -120,6 +156,13 @@ data %>%
   #View()
   dplyr::filter(regions == 1) %>% 
   dplyr::count()
+
+data %>% 
+  dplyr::group_by(group) %>% 
+  dplyr::summarize(
+    species = dplyr::n_distinct(acceptedNameUsage),
+    percentage = round((species / length(unique(data$acceptedNameUsage)) * 100),
+                       digits = 2))
 
 # Output summary table ---------------------------------------------------------
 
